@@ -5,7 +5,7 @@ class CountriesApp {
     this.filteredCountries = [];
     this.isLoading = false;
     this.error = null;
-    
+
     this.init();
   }
 
@@ -50,7 +50,7 @@ class CountriesApp {
 
     try {
       const response = await fetch('https://restcountries.com/v3.1/all');
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -58,7 +58,7 @@ class CountriesApp {
       this.countries = await response.json();
       this.filteredCountries = [...this.countries];
       this.error = null;
-      
+
       this.renderCountries();
     } catch (error) {
       console.error('Error fetching countries:', error);
@@ -83,13 +83,13 @@ class CountriesApp {
 
   handleSearch(event) {
     const searchTerm = event.target.value.toLowerCase().trim();
-    
+
     if (searchTerm === '') {
       this.filterByRegion(this.elements.regionFilter.value);
       return;
     }
 
-    this.filteredCountries = this.countries.filter(country => 
+    this.filteredCountries = this.countries.filter(country =>
       country.name.common.toLowerCase().includes(searchTerm)
     );
 
@@ -104,14 +104,14 @@ class CountriesApp {
     if (region === '') {
       this.filteredCountries = [...this.countries];
     } else {
-      this.filteredCountries = this.countries.filter(country => 
+      this.filteredCountries = this.countries.filter(country =>
         country.region === region
       );
     }
 
     const searchTerm = this.elements.searchInput.value.toLowerCase().trim();
     if (searchTerm !== '') {
-      this.filteredCountries = this.filteredCountries.filter(country => 
+      this.filteredCountries = this.filteredCountries.filter(country =>
         country.name.common.toLowerCase().includes(searchTerm)
       );
     }
@@ -130,10 +130,10 @@ class CountriesApp {
   }
 
   createCountryCard(country) {
-    const name = country.name.common || 'Unknown';
+    const name = this.getCountryName(country);
     const population = country.population ? country.population.toLocaleString() : 'Unknown';
     const region = country.region || 'Unknown';
-    const capital = country.capital ? country.capital[0] : 'No capital';
+    const capital = this.getCapital(country);
     const flag = country.flags ? country.flags.svg || country.flags.png : '';
 
     return `
@@ -155,6 +155,20 @@ class CountriesApp {
         </div>
       </article>
     `;
+  }
+
+  getCountryName(country) {
+    if (typeof country.name === 'string') {
+      return country.name;
+    }
+    return country.name?.common || 'Unknown';
+  }
+
+  getCapital(country) {
+    if (country.capital) {
+      return Array.isArray(country.capital) ? country.capital[0] : country.capital;
+    }
+    return 'No capital';
   }
 
   showLoading() {
@@ -190,12 +204,12 @@ class CountriesApp {
   toggleTheme() {
     document.body.classList.toggle('dark-mode');
     const isDarkMode = document.body.classList.contains('dark-mode');
-    
+
     localStorage.setItem('theme', isDarkMode ? 'dark' : 'light');
-    
+
     const icon = this.elements.themeToggle.querySelector('i');
     const text = this.elements.themeToggle.querySelector('span');
-    
+
     if (isDarkMode) {
       icon.classList.remove('fa-moon');
       icon.classList.add('fa-sun');
@@ -210,7 +224,7 @@ class CountriesApp {
   loadTheme() {
     const savedTheme = localStorage.getItem('theme');
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
+
     if (savedTheme === 'dark' || (!savedTheme && prefersDark)) {
       document.body.classList.add('dark-mode');
       const icon = this.elements.themeToggle.querySelector('i');
